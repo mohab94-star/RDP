@@ -6,5 +6,21 @@ jobs:
     steps:
       - uses: tailscale/github-action@v3
         with:
-          authkey: ${{ secrets.TS_AUTHKEY }}
+          authkey: ${{kgeUyryQDy11CNTRL}}
       - run: tailscale status
+- name: Enable RDP & Keep Alive
+        shell: powershell
+        run: |
+          # Enable Remote Desktop
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          
+          # Set a password for the 'runneradmin' user
+          net user runneradmin YourSecurePassword123!
+          
+          Write-Host "VM is ready. Connect to the Tailscale IP using RDP."
+          Write-Host "User: runneradmin"
+          Write-Host "Pass: YourSecurePassword123!"
+          
+          # Keep the VM running for 1 hour
+          Start-Sleep -Seconds 3600 
