@@ -5,30 +5,24 @@ jobs:
   rdp-access:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Connect to Tailscale
         uses: tailscale/github-action@v2
         with:
-          authkey: ${{kgeUyryQDy11CNTRL}}
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
-      - name: Setup Desktop & RDP
+      - name: Install Desktop (Fast Mode)
         run: |
           sudo apt-get update
-          # Install lightweight desktop and RDP server
-          sudo apt-get install -y xfce4 xfce4-goodies xrdp
+          # DEBIAN_FRONTEND=noninteractive prevents the installer from asking questions
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfce4 xrdp
           
-          # Fix for Ubuntu RDP login
+          # Configure RDP for the 'runner' user
           echo "xfce4-session" > ~/.xsession
-          sudo adduser xrdp ssl-cert
-          
-          # Set the password for the 'runner' user
           echo "runner:YourSecurePassword123!" | sudo chpasswd
           
+          sudo systemctl enable xrdp
           sudo systemctl restart xrdp
-          echo "Success! VM is ready."
+          echo "Ready! Find your IP in the Connect to Tailscale step above."
 
-      - name: Keep Alive
+      - name: Wait for Connection
         run: sleep 3600
-          
