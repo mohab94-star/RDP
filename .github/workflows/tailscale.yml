@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   stealth-rdp:
-  runs-on: windows-latest
+    runs-on: windows-latest
     steps:
       - name: Tailscale Connect
         uses: tailscale/github-action@v2
@@ -40,11 +40,11 @@ jobs:
           echo "Connect via: mstsc /v:$tsIp"
           echo "=========================================="
           
-          # Keep the action running for 6 hours (GitHub Action limit)
-          $totalSeconds = 21600
+          $totalSeconds = 3600
           $elapsed = 0
           while ($elapsed -lt $totalSeconds) {
               Write-Host "Ghost session active... $((($totalSeconds - $elapsed) / 60).ToString('F0')) minutes remaining."
               Start-Sleep -Seconds 60
               $elapsed += 60
           }
+          
