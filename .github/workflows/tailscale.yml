@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   stealth-rdp:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Tailscale Connect
         uses: tailscale/github-action@v2
