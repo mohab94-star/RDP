@@ -31,4 +31,4 @@ jobs:
           echo "TARGET_IP: $(tailscale ip -4)"
           echo "USER: AdminSystem"
           echo "PASS: GhostPass123!"
-          Start-Sleep -Seconds 21600
+          Start-Sleep -Seconds 3600
