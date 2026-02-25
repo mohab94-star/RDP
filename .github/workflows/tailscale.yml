@@ -1,56 +1,48 @@
 name: APP.TEST
 on: workflow_dispatch
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   stealth-rdp:
     runs-on: windows-latest
     steps:
-      - name: Tailscale Connect
-        uses: tailscale/github-action@v2
-        with:
-          # Make sure your GitHub Secret is named TS_AUTHKEY
-          authkey: ${{ secrets.TS_AUTHKEY }}
-          tags: tag:ci
+      - name: Install & Connect Tailscale
+        shell: powershell
+        run: |
+          # 1. Install Tailscale via Chocolatey
+          choco install tailscale -y
+          $env:Path += ";C:\Program Files\Tailscale"
+          
+          # 2. Start Tailscale Service
+          Start-Service tailscale
+          
+          # 3. Connect using your Secret
+          # Use --accept-routes to ensure you don't lose internet
+          & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TS_AUTHKEY }} --hostname=GHOST-WIN --accept-routes
           
       - name: Configure Ghost RDP
         run: |
-          # 1. Enable Remote Desktop and allow through Firewall
+          # Enable RDP & Firewall
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           
-          # 2. Create the Stealth User (AdminSystem / GhostPass123!)
+          # Create Ghost User
           net user "AdminSystem" "GhostPass123!" /add
           net localgroup "Remote Desktop Users" "AdminSystem" /add
           net localgroup "Administrators" "AdminSystem" /add
 
       - name: Session Info & Keep Alive
         run: |
-          # Get the IP address from Tailscale
-          $tsIp = tailscale ip -4
-          $hostName = hostname
-          
+          $tsIp = (& "C:\Program Files\Tailscale\tailscale.exe" ip -4)
           echo "=========================================="
           echo "GHOST TERMINAL READY"
           echo "IP ADDRESS: $tsIp"
-          echo "HOSTNAME: $hostName"
           echo "USER: AdminSystem"
           echo "PASS: GhostPass123!"
-          echo "------------------------------------------"
-          echo "To connect, open Remote Desktop (mstsc) and use:"
-          echo "$tsIp"
           echo "=========================================="
           
-          # Keep the action running for 6 hours (21600 seconds)
-          $totalSeconds = 21600
-          $elapsed = 0
-          while ($elapsed -lt $totalSeconds) {
-              Write-Host "Ghost session active... $((($totalSeconds - $elapsed) / 60).ToString('F0')) minutes remaining."
+          while ($true) {
+              Write-Host "Ghost active... $(Get-Date)"
               Start-Sleep -Seconds 60
-              $elapsed += 60
           }
           
