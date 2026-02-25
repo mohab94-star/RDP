@@ -1,28 +1,16 @@
-name: Ubuntu RDP
-on: workflow_dispatch
+name: "Interactive Terminal"
+on: workflow_dispatch # Manual trigger
 
 jobs:
-  rdp-access:
-    runs-on: ubuntu-latest
+  shell:
+    runs-on: ubuntu-latest # or windows-latest
     steps:
-      - name: Connect to Tailscale
-        uses: tailscale/github-action@v2
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup tmate session
+        uses: [mxschmitt/action-tmate](https://github.com/marketplace/actions/debugging-with-tmate)@v3
         with:
-          authkey: ${{ secrets.TS_AUTHKEY }}
+          # This limits access to ONLY your GitHub account (security best practice)
+          limit-access-to-actor: true 
 
-      - name: Install Desktop (Fast Mode)
-        run: |
-          sudo apt-get update
-          # DEBIAN_FRONTEND=noninteractive prevents the installer from asking questions
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfce4 xrdp
-          
-          # Configure RDP for the 'runner' user
-          echo "xfce4-session" > ~/.xsession
-          echo "runner:YourSecurePassword123!" | sudo chpasswd
-          
-          sudo systemctl enable xrdp
-          sudo systemctl restart xrdp
-          echo "Ready! Find your IP in the Connect to Tailscale step above."
-
-      - name: Wait for Connection
-        run: sleep 3600
