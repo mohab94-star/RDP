@@ -1,13 +1,16 @@
 name: Connect
 on: [push, workflow_dispatch]
+
 jobs:
   run:
     runs-on: ubuntu-latest
+    timeout-minutes: 52  # <--- This kills the job and connection at 52 mins
     steps:
       - uses: tailscale/github-action@v3
         with:
           authkey: ${{ secrets.TS_AUTHKEY }}
-      - run: tailscale status    
-      name: Connect
-    timeout-minutes: 52
-      
+      - run: |
+          tailscale status
+          # If you want it to STAY connected for the full 52 minutes, 
+          # you need a command that keeps the runner busy, like:
+          sleep 52m 
