@@ -1,11 +1,9 @@
       - name: Connect to Tailscale
         uses: tailscale/github-action@v2
         with:
-          # Use the key you generated (tskey-auth-...)
           authkey: ${{ secrets.TS_AUTHKEY }}
 
       - name: Verify Xeon Mesh Status
-        # Now this will work instead of giving Exit Code 1
         run: |
           tailscale status
           echo "Connected to the mesh at 10Gbps!"
